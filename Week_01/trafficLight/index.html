@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>trafficLight</title>
+  <style>
+    div{
+      background-color: gray;
+      display: inline-block;
+      margin: 30px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+    .red.light{
+      background-color: red;
+    }
+    .yellow.light{
+      background-color: yellow;
+    }
+    .green.light{
+      background-color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="red"></div>
+  <div class="yellow"></div>
+  <div class="green"></div>
+</body>
+<script>
+  function changeLight(color){
+    let lights = document.getElementsByTagName("div");
+    for(let i=0;i<3;i++){
+      lights[i].classList.remove("light");
+    }
+    document.getElementsByClassName(color)[0].classList.add("light");
+  }
+  function goTimeout(){
+    changeLight("red");
+    setTimeout(()=>{
+      changeLight("yellow");
+      setTimeout(()=>{
+        changeLight("green");
+        setTimeout(()=>{
+          go();
+        },10000)
+      },2000)
+    },5000)
+  }
+  function sleep(time){
+    return new Promise((resolve,reject)=>{
+      setTimeout(resolve, time);
+    })
+  }
+  function goPromise(){
+    changeLight("red");
+    sleep(5000).then(()=>{
+      changeLight("yellow");
+      return sleep(2000);
+    }).then(()=>{
+      changeLight("green");
+      return sleep(10000)
+    }).then(()=>{
+      goPromise();
+    })
+  }
+  async function goAsync(){
+    while(true){
+      changeLight("red");
+      await sleep(5000);
+      changeLight("yellow");
+      await sleep(2000);
+      changeLight("green");
+      await sleep(10000);
+    }
+  }
+</script>
+</html>

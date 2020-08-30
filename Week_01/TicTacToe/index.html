@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TicTacToe</title>
+  <style>
+    .cell{
+      width: 100px;
+      height: 100px;
+      background-color: green;
+      border: 1px solid white;
+      display: inline-block;
+      vertical-align: middle;
+      /* 控制 内容字体大小和居中*/
+      font-size: 50px;
+      line-height: 100px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="board"></div>
+  <div id="person"></div>
+</body>
+<script>
+  let pattern = [ [0,0,0],
+                  [0,0,0],
+                  [0,0,0]
+                ];
+  let color = 1;
+  let iswin = false;
+  function show(){
+    let board = document.getElementById("board");
+    board.innerHTML = "";
+    for(let i=0;i<3;i++){
+      for(let j=0;j<3;j++){
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerHTML = pattern[i][j] == "2" ? "O" :
+                        pattern[i][j] == "1" ? "X" : "";
+        cell.addEventListener("click",()=>usermove(i,j));
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("br"));
+    }
+  }
+  // 下棋
+  function usermove(posY,posX){
+    if(iswin){
+      alert(color=="2" ? "O is winner" : "X is winner");
+      return;
+    }
+    pattern[posY][posX] = color;
+    if(check(pattern,color)){
+      iswin = true;
+      alert(color=="2" ? "O is winner" : "X is winner");
+      show();
+      return;
+    }
+    color = 3-color;
+    if(willwin(pattern,color)){
+      console.log(color=="2" ? "O will win" : "X will win");
+    }
+    console.log(bestChoice(pattern,color));
+    show();
+  }
+  function commove(){
+    let choice = bestChoice(pattern,color);
+    if(choice.point){
+      pattern[choice.point[0]][choice.point[1]] = color;
+    }
+    if(check(pattern,color)){
+      alert(color=="2" ? "O is winner" : "X is winner");
+    }
+    color = 3-color;
+    show();
+  }
+  // 检测是否胜利
+  function check(pattern,color){
+    // 横三列
+    for(let i=0;i<3;i++){
+      let iswin = true;
+      for(let j=0;j<3;j++){
+        if(pattern[i][j] != color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    // 竖三行
+    for(let i=0;i<3;i++){
+      let iswin = true;
+      for(let j=0;j<3;j++){
+        if(pattern[j][i] != color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    {
+      // 左上右下斜
+      let iswin = true;
+      for(let i=0;i<3;i++){
+        if(pattern[i][i]!=color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    {
+      // 右上左下斜
+      let iswin = true;
+      for(let i=0;i<3;i++){
+        if(pattern[i][2-i]!=color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+  }
+  function clone(pattern){
+    return JSON.parse(JSON.stringify(pattern));
+  }
+  function willwin(pattern,color){
+    for(let i=0;i<3;i++){
+      for(let j=0;j<3;j++){
+        if(pattern[i][j]){
+          continue;
+        }
+        let temp = clone(pattern);
+        temp[i][j]=color;
+        if(check(temp,color)){
+          return [i,j];
+        }
+      }
+    }
+    return null;
+  }
+  function bestChoice(pattern,color){
+    let point = null;
+    let result = -2;
+    if(point = willwin(pattern,color)){
+      return {
+        point:point,
+        result: 1
+      }
+    }
+    outer:for(let i=0;i<3;i++){
+      for(let j=0;j<3;j++){
+        if(pattern[i][j]){
+          continue;
+        }
+        let temp = clone(pattern);
+        temp[i][j]=color;
+        let res = bestChoice(temp,3-color).result;
+        if(-res > result){
+          result = -res;
+          point = [i,j];
+        }
+        if(result == 1){
+          break outer;
+        }
+      }
+    }
+    return {
+      point:point,
+      result: point ? result : 0
+    }
+  }
+  show();
+</script>
+</html>
