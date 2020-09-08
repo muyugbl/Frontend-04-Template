@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mapEditor</title>
+  <style>
+    #map{
+      width: 1201px;
+      display:flex;
+      flex-flow: row wrap;
+    }
+    .cell{
+      width: 10px;
+      height: 10px;
+      background-color: gray;
+      border: 1px solid white;
+    }
+    .button{
+      margin-bottom: 10px;
+      width: 70px;
+      height: 36px;
+      line-height: 36px;
+      text-align: center;
+      border: 1px solid gray;
+      border-radius: 14%;
+      color:white;
+      background-color: blue;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="button" onClick="setStorage()">保存</div>
+  <div id="map"></div>
+</body>
+<script>
+  class Sorted{
+    constructor(data,compare){
+      this.data = data.slice();
+      this.compare = compare || ((a,b)=>a-b);
+    }
+    take(){
+      if(this.data.length == 0){
+        return;
+      }
+      let min = this.data[0];
+      let minIndex = 0;
+      for(let i=1;i<this.data.length;i++){
+        if(this.compare(this.data[i],min) < 0){
+          min = this.data[i];
+          minIndex =i;
+        }
+      }
+      this.data[minIndex] = this.data[this.data.length-1];
+      this.data.pop();
+      return min;
+    }
+    give(v){
+      this.data.push(v);
+    }
+  }
+  let map = document.getElementById("map");
+  let mapCell = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0);
+  let mousedown = false;
+  let clear = false;
+  // 初始化地图
+  function initMap(){
+    for(let i=0;i<100;i++){
+      for(let j=0;j<100;j++){
+        // 初始化地图格子
+        let cell  = document.createElement("div");
+        cell.classList.add("cell");
+        if(mapCell[100*i+j]==1){
+          cell.style.backgroundColor = "black";
+        }
+        // 添加鼠标监听事件
+        cell.addEventListener("mousemove",()=>{
+          if(mousedown){
+            if(clear){
+              cell.style.backgroundColor="gray";
+              mapCell[100*i+j]=0;
+            }else {
+              cell.style.backgroundColor="black";
+              mapCell[100*i+j]=1;
+            }
+          }
+        })
+        map.appendChild(cell);
+      }
+    }
+  }
+  // 工具函数：鼠标左右键按下、鼠标左右键松开、屏蔽右键菜单
+  function utils(){
+    document.addEventListener("mousedown",(e)=>{
+      mousedown = true;
+      clear = (e.which == 3);
+    })
+    document.addEventListener("mouseup",()=>{
+      mousedown = false;
+    })
+    document.addEventListener("contextmenu",(e)=>{ e.preventDefault()})
+  }
+  // 存储当前地图
+  function setStorage(){
+    localStorage['map'] = JSON.stringify(mapCell);
+    alert("保存成功");
+  }
+  async function sleep(time){
+    return new Promise((resolve,reject)=>{
+      setTimeout(resolve, time);
+    })
+  }
+  // 地图寻路：广度优先遍历
+  async function findpath(start,end){
+    let table=Object.create(mapCell);
+    let queue = new Sorted([start],(a,b)=>distance(a)-distance(b));
+    function distance(point){
+      return ((point[0]-end[0])**2) + ((point[1]-end[1])**2);
+    }
+    // 寻找新的路节点
+    async function insert(x,y,pre){
+      // 遇到地图边界
+      if(x<0 || x>=100 || y<0 || y>= 100){
+        return;
+      }
+      // 遇到阻碍
+      if(table[100*y+x]){return;}
+      await sleep(300);
+      map.children[100*y+x].style.backgroundColor="lightgreen";
+      table[100*y+x] = pre;
+      queue.give([x,y]);
+      console.log(x,y);
+    }
+    while(queue.data.length){
+      let [x,y] = queue.take();
+      if(x==end[0] && y == end[1]){
+        let path=[];
+        while(x!=start[0] || y!=start[1]){
+          path.push(mapCell[100*y+x]);
+          [x,y] = table[100*y+x];
+          await sleep(300);
+          map.children[100*y+x].style.backgroundColor="purple";
+        }
+        return path;
+      }
+      await insert(x,y+1,[x,y]);  // 右
+      await insert(x+1,y,[x,y]);  // 下
+      await insert(x-1,y,[x,y]);  // 上
+      await insert(x,y-1,[x,y]);  // 左
+    }
+    return null;
+  }
+  initMap();
+  utils();
+  findpath(mapCell,[0,0],[10,10]);
+</script>
+</html>
