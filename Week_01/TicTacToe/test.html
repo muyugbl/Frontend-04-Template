@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TicTacToe</title>
+  <style>
+    .cell{
+      width: 100px;
+      height: 100px;
+      background-color: green;
+      border: 1px solid white;
+      display: inline-block;
+      vertical-align: middle;
+      /* 控制 内容字体大小和居中*/
+      font-size: 50px;
+      line-height: 100px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="board"></div>
+</body>
+<script>
+  let pattern = [[0, 0, 0],
+                 [0, 0, 0],
+                 [0, 0, 0]
+                ];
+  let firstColor = "1"; 
+  function show(){
+    let board = document.getElementById("board");
+    board.innerText = "";
+    for (let i = 0; i < pattern.length; i++) {
+      for (let j = 0; j < pattern[i].length; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerText = pattern[i][j] == "2" ? "X" :
+                        pattern[i][j] == "1" ? "O" : "";
+        cell.addEventListener("click",()=>userMove(i,j))
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("br"));
+    }
+  }
+  // 监听事件
+  function userMove(positionY,positionX){
+    pattern[positionY][positionX] = firstColor;
+    if(check(pattern,firstColor)){
+      alert(firstColor=="2" ? "X is winner" : "O is winner");
+    }
+    firstColor = 3-firstColor;
+    show();
+    console.log( bestChoice(pattern,firstColor) );
+    // setTimeout(function(){
+      // computerMove();
+    // },3000)
+  }
+  function computerMove(){
+    let choice = bestChoice(pattern,firstColor);
+    if(choice.point){
+      pattern[choice.point[0]][choice.point[1]] = firstColor;
+    }
+    if(check(pattern,firstColor)){
+      alert(firstColor=="2" ? "X is winner" : "O is winner");
+    }
+    firstColor = 3-firstColor;
+    show();
+  }
+  /*
+  function move(positionY,positionX){
+    pattern[positionY][positionX] = firstColor;
+    if(check(pattern,firstColor)){
+      alert(firstColor=="2" ? "X is winner" : "O is winner");
+    }
+    firstColor = 3-firstColor;
+    console.log( bestChoice(pattern,firstColor) );
+    show();
+    // if(willwin(pattern,firstColor)){
+    //   alert(firstColor=="2" ? "X will win" : "O will win");
+    // }
+  }*/
+  function check(pattern,color){
+    // 检查横三列
+    for (let i = 0; i < pattern.length; i++) {
+      let iswin = true;
+      for (let j = 0; j < pattern[i].length; j++) {
+        if(pattern[j][i] != color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    // 检查竖三行
+    for (let i = 0; i < pattern.length; i++) {
+      let iswin = true;
+      for (let j = 0; j < pattern[i].length; j++) {
+        if(pattern[i][j] != color){
+          iswin = false;
+        }
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    {
+      // 检查右下斜
+      let iswin = true;
+      for (let i = 0; i < pattern.length; i++) {
+        if(pattern[i][i] != color){
+          iswin = false;
+        }  
+      }
+      if(iswin){
+        return true;
+      }
+    }
+    {
+      // 检查右上斜
+      let iswin = true;
+      for (let i = 0; i < pattern.length; i++) {
+        if(pattern[i][pattern.length-i] != color){
+          iswin = false;
+        }  
+      }
+      if(iswin){
+        return true;
+      }
+    }
+  }
+  function willwin(pattern,color){
+    for (let i = 0; i < pattern.length; i++) {
+      for (let j = 0; j < pattern[i].length; j++) {
+        if(pattern[i][j]){
+          continue;
+        }
+        let opattern = Object.create(pattern);
+        opattern[i][j] = color;
+        if(check(opattern,color)){
+          return [j,i]
+        }
+      }
+    }
+    return null;
+  }
+  function bestChoice(pattern,color){
+    let p;
+    if(p = willwin(pattern,color)){
+      return {
+        point:p,
+        result:1
+      }
+    }
+    let result =-2;
+    let point = null;
+    outer:for (let i = 0; i < pattern.length; i++) {
+      for (let j = 0; j < pattern[i].length; j++) {
+        if(pattern[i][j]){
+          continue;
+        }
+        let opattern = Object.create(pattern);
+        opattern[i][j] = color;
+        let res = bestChoice(opattern,opattern[i].length-color).result;
+        if(-res > result){
+            result = -res;
+            point = [j,i]
+        }
+        if(result ==1){
+          break outer;
+        }
+      }
+    }
+    return {
+      point:point,
+      result: point ? result : 0
+    }
+  }
+  show();
+</script>
+
+</html>
