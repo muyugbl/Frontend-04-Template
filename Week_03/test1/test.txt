@@ -1,0 +1,16 @@
+// 1+2*3 
+<MultiplicativeExpression>:= <Number> | 
+                             <MultiplicativeExpression>"*"</Number> |
+                             <MultiplicativeExpression>"/"</Number>
+<AddtiveExpression>::=<MultiplicativeExpression> | 
+                      <AddtiveExpression> "+" <MultiplicativeExpression> |
+                      <AddtiveExpression> "-" <MultiplicativeExpression> 
+<BracketsExpression>::=<Number> |
+                       "("<AddtiveExpression>")"
+
+形式语言：根据用途区分
+数据描述语言：html、css、xml、json、sql
+编程语言：C、C++、C#、Java、JavaScript、Python、Go、PHP、Kotlin、Ruby、Perl
+形式语言：按表达方式区分
+声明式语言：html、css、xml、json、sql
+命令式语言：C、C++、C#、Java、JavaScript、Python、Go、PHP、Kotlin、Ruby、Perl
